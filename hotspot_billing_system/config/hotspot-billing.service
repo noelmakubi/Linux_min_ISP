@@ -1,0 +1,42 @@
+#!/usr/bin/env python3
+"""
+Systemd service file for Hotspot Billing System
+Create at: /etc/systemd/system/hotspot-billing.service
+"""
+
+SERVICE_FILE = """[Unit]
+Description=Hotspot Billing System - Flask Application
+Documentation=https://github.com/yourusername/hotspot-billing
+After=network.target
+
+[Service]
+Type=notify
+User=root
+WorkingDirectory=/home/noel/Desktop/sideAPP/hotspot_billing_system
+Environment="PATH=/usr/bin:/usr/local/bin"
+EnvironmentFile=/etc/default/hotspot-billing
+
+# Start command
+ExecStart=/usr/bin/python3 run.py
+
+# Restart policy
+Restart=always
+RestartSec=5
+StartLimitInterval=60
+StartLimitBurst=3
+
+# Security
+NoNewPrivileges=true
+PrivateTmp=true
+
+# logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=hotspot-billing
+
+[Install]
+WantedBy=multi-user.target
+"""
+
+if __name__ == '__main__':
+    print(SERVICE_FILE)

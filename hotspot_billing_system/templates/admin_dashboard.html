@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Hotspot Billing</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f5f5;
+        }
+        
+        .navbar {
+            background: #333;
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .navbar h1 { font-size: 24px; }
+        
+        .navbar button {
+            background: #d32f2f;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .card {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .card h2 {
+            color: #333;
+            margin-bottom: 1rem;
+            font-size: 18px;
+        }
+        
+        .stat-value {
+            font-size: 36px;
+            font-weight: bold;
+            color: #667eea;
+        }
+        
+        .tabs {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            border-bottom: 2px solid #e0e0e0;
+        }
+        
+        .tab-btn {
+            background: none;
+            border: none;
+            padding: 1rem;
+            cursor: pointer;
+            font-size: 16px;
+            color: #666;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+        }
+        
+        .tab-btn.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #333;
+            font-weight: 600;
+        }
+        
+        input, select, textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        button.btn-primary {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-right: 0.5rem;
+        }
+        
+        button.btn-primary:hover {
+            background: #5568d3;
+        }
+        
+        button.btn-danger {
+            background: #d32f2f;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+        
+        th, td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        th {
+            background: #f9f9f9;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        tr:hover {
+            background: #f5f5f5;
+        }
+        
+        .message {
+            padding: 1rem;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+        }
+        
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <h1>🔧 Hotspot Admin Panel</h1>
+        <button onclick="logout()">Logout</button>
+    </div>
+    
+    <div class="container">
+        <div id="message" class="message" style="display: none;"></div>
+        
+        <!-- Stats Cards -->
+        <div class="dashboard-grid">
+            <div class="card">
+                <h2>Active Sessions</h2>
+                <div class="stat-value" id="stat-active">0</div>
+            </div>
+            <div class="card">
+                <h2>Total Vouchers</h2>
+                <div class="stat-value" id="stat-total">0</div>
+            </div>
+            <div class="card">
+                <h2>Used Vouchers</h2>
+                <div class="stat-value" id="stat-used">0</div>
+            </div>
+            <div class="card">
+                <h2>Unused Vouchers</h2>
+                <div class="stat-value" id="stat-unused">0</div>
+            </div>
+        </div>
+        
+        <!-- Tabs -->
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('vouchers')">Manage Vouchers</button>
+            <button class="tab-btn" onclick="switchTab('sessions')">Active Sessions</button>
+            <button class="tab-btn" onclick="switchTab('logs')">Logs</button>
+        </div>
+        
+        <!-- Vouchers Tab -->
+        <div id="vouchers" class="tab-content active">
+            <div class="card">
+                <h2>Create New Vouchers</h2>
+                <div class="form-group">
+                    <label for="voucher-count">Number of Vouchers:</label>
+                    <input type="number" id="voucher-count" value="1" min="1" max="100">
+                </div>
+                <div class="form-group">
+                    <label for="voucher-duration">Duration (minutes):</label>
+                    <input type="number" id="voucher-duration" value="60" min="1">
+                </div>
+                <button class="btn-primary" onclick="createVouchers()">Generate Vouchers</button>
+            </div>
+            
+            <div class="card" style="margin-top: 2rem;">
+                <h2>All Vouchers</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Code</th>
+                            <th>Duration (min)</th>
+                            <th>Status</th>
+                            <th>Created</th>
+                            <th>Used</th>
+                        </tr>
+                    </thead>
+                    <tbody id="vouchers-list">
+                        <tr><td colspan="5" style="text-align: center; color: #999;">Loading...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- Sessions Tab -->
+        <div id="sessions" class="tab-content">
+            <div class="card">
+                <h2>Active User Sessions</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>User IP</th>
+                            <th>MAC Address</th>
+                            <th>Start Time</th>
+                            <th>Expiry Time</th>
+                            <th>Time Remaining</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="sessions-list">
+                        <tr><td colspan="6" style="text-align: center; color: #999;">Loading...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- Logs Tab -->
+        <div id="logs" class="tab-content">
+            <div class="card">
+                <h2>System Logs</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Timestamp</th>
+                            <th>Event Type</th>
+                            <th>User IP</th>
+                            <th>Details</th>
+                        </tr>
+                    </thead>
+                    <tbody id="logs-list">
+                        <tr><td colspan="4" style="text-align: center; color: #999;">Loading...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function switchTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Show selected tab
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+            
+            // Load data for the tab
+            if (tabName === 'vouchers') loadVouchers();
+            if (tabName === 'sessions') loadSessions();
+            if (tabName === 'logs') loadLogs();
+        }
+        
+        async function loadStats() {
+            try {
+                const response = await fetch('/admin/api/stats');
+                const data = await response.json();
+                
+                document.getElementById('stat-active').textContent = data.active_sessions;
+                document.getElementById('stat-total').textContent = data.total_vouchers;
+                document.getElementById('stat-used').textContent = data.used_vouchers;
+                document.getElementById('stat-unused').textContent = data.unused_vouchers;
+            } catch (error) {
+                console.error('Error loading stats:', error);
+            }
+        }
+        
+        async function loadVouchers() {
+            try {
+                const response = await fetch('/admin/api/vouchers');
+                const data = await response.json();
+                
+                const tbody = document.getElementById('vouchers-list');
+                tbody.innerHTML = '';
+                
+                data.vouchers.forEach(v => {
+                    const row = `<tr>
+                        <td><code>${v.code}</code></td>
+                        <td>${v.allowed_minutes}</td>
+                        <td><strong>${v.status}</strong></td>
+                        <td>${new Date(v.created_at).toLocaleString()}</td>
+                        <td>${v.used_at ? new Date(v.used_at).toLocaleString() : '-'}</td>
+                    </tr>`;
+                    tbody.innerHTML += row;
+                });
+                
+                if (data.vouchers.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #999;">No vouchers found</td></tr>';
+                }
+            } catch (error) {
+                console.error('Error loading vouchers:', error);
+            }
+        }
+        
+        async function loadSessions() {
+            try {
+                const response = await fetch('/admin/api/sessions');
+                const data = await response.json();
+                
+                const tbody = document.getElementById('sessions-list');
+                tbody.innerHTML = '';
+                
+                data.sessions.forEach(s => {
+                    const remaining = Math.max(0, s.time_remaining);
+                    const mins = Math.floor(remaining / 60);
+                    const secs = remaining % 60;
+                    const row = `<tr>
+                        <td>${s.user_ip}</td>
+                        <td>${s.user_mac}</td>
+                        <td>${new Date(s.start_time).toLocaleString()}</td>
+                        <td>${new Date(s.expiry_time).toLocaleString()}</td>
+                        <td>${mins}m ${secs}s</td>
+                        <td><button class="btn-danger" onclick="disconnectSession(${s.id})">Disconnect</button></td>
+                    </tr>`;
+                    tbody.innerHTML += row;
+                });
+                
+                if (data.sessions.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #999;">No active sessions</td></tr>';
+                }
+            } catch (error) {
+                console.error('Error loading sessions:', error);
+            }
+        }
+        
+        async function loadLogs() {
+            try {
+                const response = await fetch('/admin/api/logs');
+                const data = await response.json();
+                
+                const tbody = document.getElementById('logs-list');
+                tbody.innerHTML = '';
+                
+                data.logs.forEach(l => {
+                    const row = `<tr>
+                        <td>${new Date(l.timestamp).toLocaleString()}</td>
+                        <td><strong>${l.event_type}</strong></td>
+                        <td>${l.user_ip}</td>
+                        <td>${l.details || '-'}</td>
+                    </tr>`;
+                    tbody.innerHTML += row;
+                });
+                
+                if (data.logs.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: #999;">No logs found</td></tr>';
+                }
+            } catch (error) {
+                console.error('Error loading logs:', error);
+            }
+        }
+        
+        async function createVouchers() {
+            const count = parseInt(document.getElementById('voucher-count').value);
+            const duration = parseInt(document.getElementById('voucher-duration').value);
+            
+            try {
+                const response = await fetch('/admin/api/vouchers', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ count, allowed_minutes: duration })
+                });
+                
+                const data = await response.json();
+                showMessage(data.message, true);
+                
+                // Copy vouchers to clipboard
+                const voucherCodes = data.vouchers.map(v => v.code).join('\n');
+                navigator.clipboard.writeText(voucherCodes);
+                showMessage('✅ ' + data.message + ' (copied to clipboard)', true);
+                
+                loadVouchers();
+                loadStats();
+            } catch (error) {
+                showMessage('❌ Error creating vouchers', false);
+            }
+        }
+        
+        async function disconnectSession(sessionId) {
+            try {
+                await fetch(`/admin/api/sessions/${sessionId}/disconnect`, { method: 'POST' });
+                showMessage('✅ User disconnected', true);
+                loadSessions();
+                loadStats();
+            } catch (error) {
+                showMessage('❌ Error disconnecting user', false);
+            }
+        }
+        
+        function showMessage(text, isSuccess) {
+            const msg = document.getElementById('message');
+            msg.textContent = text;
+            msg.className = `message ${isSuccess ? 'success' : 'error'}`;
+            msg.style.display = 'block';
+            setTimeout(() => { msg.style.display = 'none'; }, 5000);
+        }
+        
+        async function logout() {
+            await fetch('/admin/logout', { method: 'POST' });
+            window.location.href = '/';
+        }
+        
+        // Load stats on page load and refresh every 10 seconds
+        loadStats();
+        loadVouchers();
+        setInterval(loadStats, 10000);
+    </script>
+</body>
+</html>

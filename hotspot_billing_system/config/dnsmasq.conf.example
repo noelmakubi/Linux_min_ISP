@@ -1,0 +1,32 @@
+# Dnsmasq Configuration Template
+# Place this in /etc/dnsmasq.d/hotspot.conf and adjust as needed
+
+# Specify the interface to use
+interface=wlan1
+
+# Listen only on specified interface
+listen-address=192.168.10.1
+
+# Disable DNS
+port=0
+
+# DHCP Configuration
+dhcp-range=192.168.10.10,192.168.10.50,12h
+dhcp-option=option:router,192.168.10.1
+dhcp-option=option:netmask,255.255.255.0
+
+# Gateway for clients
+dhcp-option=6,8.8.8.8,8.8.4.4
+
+# Lease file
+dhcp-leasefile=/var/lib/dnsmasq/dnsmasq.leases
+
+# Logging
+log-dhcp
+log-facility=/var/log/dnsmasq.log
+
+# Reduce default lease time
+dhcp-lease-max=100
+
+# Read additional files from directory
+conf-dir=/etc/dnsmasq.d/,*.conf

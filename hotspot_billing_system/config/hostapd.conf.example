@@ -1,0 +1,42 @@
+# Hostapd Configuration Template
+# Place this in /etc/hostapd/hostapd.conf and adjust as needed
+
+# The interface to use
+interface=wlan1
+
+# Driver to use (nl80211 for modern Linux)
+driver=nl80211
+
+# Country code
+country_code=US
+
+# SSID of the hotspot
+ssid=FreeHotspot
+
+# Channel (1-11 for 2.4GHz, must match upstream WiFi)
+channel=6
+
+# WiFi band (a=5GHz, b/g=2.4GHz)
+hw_mode=g
+
+# Security settings
+auth_algs=1
+wpa=2
+wpa_passphrase=yourpasswordhere
+wpa_key_mgmt=WPA-PSK
+wpa_pairwise=CCMP
+
+# Enable AP mode
+ap_isolate=1
+
+# Beacon interval
+beacon_int=100
+
+# Fragmentation threshold
+fragm_threshold=2346
+
+# RTS threshold
+rts_threshold=2347
+
+# Debugging level (0=no debug, 1=err, 2=warn, 3=info, 4=debug)
+debug=2
